@@ -17,6 +17,7 @@ namespace MathTools
 		public List<VertexConstraint> VertexConstraints{ get; private set; } //per gestire la mesh
 		public List<Vec3> VertexOld { get; private set; }
 		public List<Vec3> VertexNow { get { return VertexList; } set { VertexList = value; } }
+		public IMatrix Model { get; set; }
 
 		void GenerateVertexConstraintsFromFaces(){
 			foreach (var f in Faces) {
@@ -58,11 +59,11 @@ namespace MathTools
 
 		}
 
-		public void FixCollisionWithSphere(Vec3 sphereCenter, float sphereRadius,IMatrix model){
-			var offset = -0.05f;
+		public void FixCollisionWithSphere(Vec3 sphereCenter, float sphereRadius){
+			var offset = +0.25f;
 			for (var i = 0; i<VertexList.Count; i++) {
 			
-				var v = new Vec3(model.Direct.Dot(VertexList [i]));
+				var v = new Vec3(Model.Direct.Dot(VertexList [i]));
 				var diff = (v - sphereCenter);
 				var distance = diff.Norm();
 				if (distance > sphereRadius+offset) {
@@ -70,7 +71,7 @@ namespace MathTools
 					continue;
 				}
 				v = sphereCenter+(diff.Normalized () * (sphereRadius+offset));
-				VertexList[i] = new Vec3 (model.Inverse.Dot (v));
+				VertexList[i] = new Vec3 (Model.Inverse.Dot (v));
 				VertexList [i].IsColliding = true;
 			}
 
@@ -114,6 +115,7 @@ namespace MathTools
 			VertexOld = new List<Vec3> ();
 			Force = new Vec3 (0, 0, 0);
 			Mass = 0;
+			Model = IMatrix.Identity ();
 			foreach (var v in VertexNow)
 				VertexOld.Add (v * 1);
 			GenerateVertexConstraintsFromFaces ();

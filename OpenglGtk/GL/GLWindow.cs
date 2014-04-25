@@ -14,7 +14,6 @@ namespace OpenGLTkVerletDemo
 		MouseTrackBall trackball;
 		int mvpLocation = -1;
 		int colorLocation = -1;
-		Vec4 color;
 		IMatrixStack mvp;
 		bool wireframeOn = true;
 		VerletMesh cloth;
@@ -41,7 +40,6 @@ namespace OpenGLTkVerletDemo
 			VSync = OpenTK.VSyncMode.On;
 			InitProgram ();
 			mvp = new IMatrixStack ();
-			color = new Vec4 (0.5f, 0.5f, 0.5f,0.5f);
 			Reset ();
 			ResetTrackBall ();
 		
@@ -138,7 +136,7 @@ namespace OpenGLTkVerletDemo
 
 
 			mvp.Push ();
-			mvp.MultMatrix (clothModel);
+			mvp.MultMatrix (cloth.Model);
 			SendUniforms (new Vec4(0.5f,1,0.3f,1.0f));
 			DrawMesh (cloth);
 			mvp.Pop ();
@@ -161,7 +159,7 @@ namespace OpenGLTkVerletDemo
 
 			cloth.PhysicStep ((float)e.Time);
 			foreach(var sphere in spheres)
-				cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))),sphere.Radius, clothModel);
+				cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))),sphere.Radius);
 	
 			cloth.ApplyConstraints ();
 
@@ -218,12 +216,11 @@ namespace OpenGLTkVerletDemo
 		Vec3 clothForce;
 		float clothWidth;
 		float clothHeight;
-		IMatrix clothModel;
 		void InitCloth(){
 			clothForce = new Vec3(0,0,+1).Mult(0.05f).Normalized();
-			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=40,clothHeight=40, 30, 30));
+			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=25,clothHeight=25, 30, 30));
 			cloth.Mass= (0.05f);
-			clothModel =  IMatrix.Translation (0, 10.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
+			cloth.Model =  IMatrix.Translation (0, 10.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
 		}
 
 
