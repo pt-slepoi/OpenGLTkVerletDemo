@@ -9,7 +9,8 @@ namespace MathTools
 
         float[] v;
 
-
+		//little workaround
+		public bool IsColliding { get; set; }
 
         public Vec4()
         {
@@ -18,6 +19,7 @@ namespace MathTools
 			Y = 0;
 			Z = 0;
 			W = 1;
+			IsColliding = false;
         }
 
 
@@ -28,6 +30,7 @@ namespace MathTools
             v[1] = y;
             v[2] = z;
             v[3] = w;
+			IsColliding = false;
         }
 
 
@@ -38,6 +41,7 @@ namespace MathTools
             v[1] = u.Y;
             v[2] = u.Z;
             v[3] = u.W;
+			IsColliding = false;
         }
 
 

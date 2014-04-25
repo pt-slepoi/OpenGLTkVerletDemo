@@ -17,6 +17,9 @@ namespace MathTools
         {
         }
 
+		public Vec3():base(){
+		}
+
 		public Vec3(Vec4 v)
 
 		{

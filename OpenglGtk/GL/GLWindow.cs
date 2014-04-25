@@ -67,6 +67,11 @@ namespace OpenGLTkVerletDemo
 						ResetTrackBall ();
 						break;
 					}
+				case "p":
+				{
+					pause = !pause;
+					break;
+				}
 
 				}
 			};
@@ -85,13 +90,14 @@ namespace OpenGLTkVerletDemo
 			InitCloth ();
 			InitSphere ();
 			appliedForce = false;
-			elapsedTime = 0;
+		
 			pause = false;
 		}
 
 		protected override void OnRenderFrame (OpenTK.FrameEventArgs e)
 		{
 			base.OnRenderFrame (e);
+
 			GL.Clear (ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 			if (wireframeOn)
 				GL.PolygonMode (MaterialFace.FrontAndBack, PolygonMode.Line);
@@ -117,28 +123,15 @@ namespace OpenGLTkVerletDemo
 
 
 			//from now on... model!
-			//var sphereModel = IMatrix.Translation (sphereCenter.X, sphereCenter.Y, sphereCenter.Z);
 			mvp.Push ();
 			mvp.MultMatrix (sphereModel);
 			SendUniforms ();
 			DrawSphere (sphereRadius, 32, 16);
-
-			//DrawSphere (sphereRadius, 5, 5);
 			mvp.Pop ();
 
 			mvp.Push ();
-
-
-
 			mvp.MultMatrix (clothModel);
-
 			SendUniforms ();
-
-			var sc = new Vec3 (sphereModel.Direct.Dot (new Vec4 (0, 0, 0, 1)));
-			cloth.UpdatePosition ((float)elapsedTime);
-
-			cloth.FixCollisionWithSphere (sc, sphereRadius,clothModel);
-			cloth.ApplyConstraints ();
 			DrawMesh (cloth);
 			mvp.Pop ();
 
@@ -153,23 +146,25 @@ namespace OpenGLTkVerletDemo
 			DrawBigPoint ();
 			mvp.Pop ();
 
-			mvp.Push ();
-			mvp.MultMatrix (IMatrix.Translation (50, 50, 7));
-			SendUniforms ();
-			DrawBigPoint ();
-			mvp.Pop ();
+
 			SwapBuffers ();
 
 
 		}
-		double deltaTime = 0;
-		double elapsedTime = 0;
+		float time = 0;
+	
 		protected override void OnUpdateFrame (FrameEventArgs e)
 		{
 			base.OnUpdateFrame (e);
-			deltaTime = e.Time - (deltaTime);
+
+	
 			if(!pause)
-				elapsedTime += e.Time;
+				time += (float)e.Time;
+
+			var sc = new Vec3 (sphereModel.Direct.Dot (new Vec4 (0, 0, 0, 1)));
+			cloth.UpdatePosition (1);
+			cloth.FixCollisionWithSphere (sc, sphereRadius,clothModel);
+			cloth.ApplyConstraints ();
 
 
 		}

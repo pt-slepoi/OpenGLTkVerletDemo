@@ -114,6 +114,5 @@
     </None>
     <None Include="Meshes\cube.mtl" />
     <None Include="Meshes\cube.obj" />
-    <None Include="MathTools\VerletMesh %28copy%29.cs" />
   </ItemGroup>
 </Project>
