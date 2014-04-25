@@ -59,17 +59,17 @@ namespace MathTools
 		}
 
 		public void FixCollisionWithSphere(Vec3 sphereCenter, float sphereRadius,IMatrix model){
-
+			var offset = -0.05f;
 			for (var i = 0; i<VertexList.Count; i++) {
 			
 				var v = new Vec3(model.Direct.Dot(VertexList [i]));
 				var diff = (v - sphereCenter);
 				var distance = diff.Norm();
-				if (distance > sphereRadius) {
+				if (distance > sphereRadius+offset) {
 					VertexList [i].IsColliding = false;
 					continue;
 				}
-				v = diff.Normalized () * sphereRadius;
+				v = sphereCenter+(diff.Normalized () * (sphereRadius+offset));
 				VertexList[i] = new Vec3 (model.Inverse.Dot (v));
 				VertexList [i].IsColliding = true;
 			}

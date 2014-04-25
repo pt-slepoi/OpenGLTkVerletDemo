@@ -13,7 +13,8 @@ namespace OpenGLTkVerletDemo
 		int program;
 		MouseTrackBall trackball;
 		int mvpLocation = -1;
-//		int colorLocation = -1;
+		int colorLocation = -1;
+		Vec4 color;
 		IMatrixStack mvp;
 		bool wireframeOn = true;
 		VerletMesh cloth;
@@ -33,12 +34,14 @@ namespace OpenGLTkVerletDemo
 		{
 			base.OnLoad (args);
 			GL.Viewport(0, 0, Width, Height);
-			//GL.ClearColor (0.0f, 0.66f, 0.93f, 1.0f);
-			GL.ClearColor (1.0f, 1.0f, 1.0f, 1.0f);
+
+			//GL.ClearColor (1.0f, 1.0f, 1.0f,0.0f);
+			GL.ClearColor (0.0f, 0.0f, 0.0f,0.0f);
 
 			VSync = OpenTK.VSyncMode.On;
 			InitProgram ();
 			mvp = new IMatrixStack ();
+			color = new Vec4 (0.5f, 0.5f, 0.5f,0.5f);
 			Reset ();
 			ResetTrackBall ();
 		
@@ -127,7 +130,8 @@ namespace OpenGLTkVerletDemo
 			foreach (var sphere in spheres) {
 				mvp.Push ();
 				mvp.MultMatrix (sphere.Model);
-				SendUniforms ();
+			
+				SendUniforms (sphere.Color);
 				DrawSphere (sphere.Radius, sphere.Rings, sphere.Segments);
 				mvp.Pop ();
 			}
@@ -135,7 +139,7 @@ namespace OpenGLTkVerletDemo
 
 			mvp.Push ();
 			mvp.MultMatrix (clothModel);
-			SendUniforms ();
+			SendUniforms (new Vec4(0.5f,1,0.3f,1.0f));
 			DrawMesh (cloth);
 			mvp.Pop ();
 
@@ -153,12 +157,13 @@ namespace OpenGLTkVerletDemo
 			if(!pause)
 				time += (float)e.Time;
 
+			AnimateSpheres();
+
 			cloth.PhysicStep ((float)e.Time);
 			foreach(var sphere in spheres)
 				cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))),sphere.Radius, clothModel);
 	
 			cloth.ApplyConstraints ();
-
 
 		}
 
@@ -169,9 +174,14 @@ namespace OpenGLTkVerletDemo
 			GL.End ();
 		}
 
-		void SendUniforms ()
+		void SendUniforms (Vec4 color)
 		{
 			GL.UniformMatrix4 (mvpLocation, 1, false, mvp.Top().Direct.ToFloatArray ());
+			GL.Uniform4 (colorLocation, 1, color.GetArray());
+		}
+		void SendUniforms ()
+		{
+			SendUniforms(new Vec4 (0.5f,0.5f,0.5f,1.0f));
 		}
 
 		void InitProgram(){
@@ -200,7 +210,7 @@ namespace OpenGLTkVerletDemo
 
 			//getting locations indexes
 			mvpLocation = GL.GetUniformLocation (program, "mvp");
-//			colorLocation = GL.GetUniformLocation( program, "color");
+			colorLocation = GL.GetUniformLocation( program, "color");
 
 
 		}
@@ -211,24 +221,28 @@ namespace OpenGLTkVerletDemo
 		IMatrix clothModel;
 		void InitCloth(){
 			clothForce = new Vec3(0,0,+1).Mult(0.05f).Normalized();
-			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=25,clothHeight=25, 25, 25));
+			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=40,clothHeight=40, 30, 30));
 			cloth.Mass= (0.05f);
 			clothModel =  IMatrix.Translation (0, 10.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
 		}
 
-	
 
 		void InitSphere(){
 			spheres = new List<Sphere> ();
-		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0) });
-		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,0) });
-		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,10) });
-		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,-10) });
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,0) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,0) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,10) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,-10) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,2.5f,0) });
 	
 		}
 
 
+		void AnimateSpheres(){
+			foreach (var s in spheres) {
+				s.Model = IMatrix.RotationY(2.0f).Dot(s.Model);
+			}
+		}
 
 	
 	}
@@ -238,10 +252,12 @@ namespace OpenGLTkVerletDemo
 		public float Radius { get; set; }
 		public int Rings { get; set; }
 		public int Segments { get; set; }
+		public Vec4 Color { get; set; }
 		public Sphere(){
 			Rings = 32;
 			Radius = 4.0f;
 			Segments = 16;
+			Color = new Vec4 (1.0f, 0, 0, 0.5f);
 		}
 
 	}
