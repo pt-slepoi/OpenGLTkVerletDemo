@@ -3,6 +3,7 @@ using System;
 using OpenTK.Graphics.OpenGL;
 using OpenTK;
 using MathTools;
+using System.Collections.Generic;
 
 namespace OpenGLTkVerletDemo
 {
@@ -16,7 +17,7 @@ namespace OpenGLTkVerletDemo
 		IMatrixStack mvp;
 		bool wireframeOn = true;
 		VerletMesh cloth;
-
+		List<Sphere> spheres;
 		bool appliedForce = false;
 		bool pause = false;
 	
@@ -123,29 +124,20 @@ namespace OpenGLTkVerletDemo
 
 
 			//from now on... model!
-			mvp.Push ();
-			mvp.MultMatrix (sphereModel);
-			SendUniforms ();
-			DrawSphere (sphereRadius, 32, 16);
-			mvp.Pop ();
+			foreach (var sphere in spheres) {
+				mvp.Push ();
+				mvp.MultMatrix (sphere.Model);
+				SendUniforms ();
+				DrawSphere (sphere.Radius, sphere.Rings, sphere.Segments);
+				mvp.Pop ();
+			}
+
 
 			mvp.Push ();
 			mvp.MultMatrix (clothModel);
 			SendUniforms ();
 			DrawMesh (cloth);
 			mvp.Pop ();
-
-			mvp.Push ();
-			SendUniforms ();
-			DrawBigPoint ();
-			mvp.Pop ();
-
-			mvp.Push ();
-			mvp.MultMatrix (IMatrix.Translation (5, 5, 5));
-			SendUniforms ();
-			DrawBigPoint ();
-			mvp.Pop ();
-
 
 			SwapBuffers ();
 
@@ -161,9 +153,10 @@ namespace OpenGLTkVerletDemo
 			if(!pause)
 				time += (float)e.Time;
 
-			var sc = new Vec3 (sphereModel.Direct.Dot (new Vec4 (0, 0, 0, 1)));
-			cloth.UpdatePosition (1);
-			cloth.FixCollisionWithSphere (sc, sphereRadius,clothModel);
+			cloth.PhysicStep ((float)e.Time);
+			foreach(var sphere in spheres)
+				cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))),sphere.Radius, clothModel);
+	
 			cloth.ApplyConstraints ();
 
 
@@ -217,22 +210,40 @@ namespace OpenGLTkVerletDemo
 		float clothHeight;
 		IMatrix clothModel;
 		void InitCloth(){
-			clothForce = new Vec3(0,0,+1).Mult(0.0005f).Normalized();
-			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=100,clothHeight=100, 50, 50));
+			clothForce = new Vec3(0,0,+1).Mult(0.05f).Normalized();
+			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=25,clothHeight=25, 25, 25));
 			cloth.Mass= (0.05f);
-			clothModel =  IMatrix.Translation (0, 7.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
+			clothModel =  IMatrix.Translation (0, 10.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
 		}
 
-		IMatrix sphereModel;
-		float sphereRadius;
 	
+
 		void InitSphere(){
-			sphereModel = IMatrix.Identity ();
-			sphereModel = sphereModel.Dot (IMatrix.Translation (0, 0, 0));
-			sphereRadius = 5;
+			spheres = new List<Sphere> ();
+		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0) });
+		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,0) });
+		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,10) });
+		//	spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,-10) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,0) });
+	
 		}
 
+
+
 	
+	}
+
+	class Sphere {
+		public IMatrix Model { get; set; }
+		public float Radius { get; set; }
+		public int Rings { get; set; }
+		public int Segments { get; set; }
+		public Sphere(){
+			Rings = 32;
+			Radius = 4.0f;
+			Segments = 16;
+		}
+
 	}
 }
 

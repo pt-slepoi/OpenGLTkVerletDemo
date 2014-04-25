@@ -39,7 +39,7 @@ namespace MathTools
 			Force = Force + force;
 		}
 	
-		public void UpdatePosition(float dt){
+		public void PhysicStep(float dt){
 		
 
 			Vec3 acc = Force.Mult(1/Mass);
