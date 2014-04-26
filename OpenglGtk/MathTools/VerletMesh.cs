@@ -42,10 +42,7 @@ namespace MathTools
 	
 		public void PhysicStep(float dt){
 		
-
 			Vec3 acc = Force.Mult(1/Mass);
-
-			Force.W = Force.W * 1.1f;
 			var pNext = new List<Vec3> ();
 			for (var i = 0; i<VertexNow.Count; i++) {
 
@@ -60,7 +57,7 @@ namespace MathTools
 		}
 
 		public void FixCollisionWithSphere(Vec3 sphereCenter, float sphereRadius){
-			var offset = +0.25f;
+			var offset = 0.25f;
 			for (var i = 0; i<VertexList.Count; i++) {
 			
 				var v = new Vec3(Model.Direct.Dot(VertexList [i]));

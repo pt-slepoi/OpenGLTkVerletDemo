@@ -30,7 +30,7 @@ namespace OpenGLTkVerletDemo
 		void DrawSphere(float radius, int rings, int segments){
 			int i, j;
 			double s, t;
-
+		
 			GL.Begin(BeginMode.TriangleStrip);
 
 			for(i = 0; i < rings; i++){

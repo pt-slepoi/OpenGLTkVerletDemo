@@ -4,6 +4,7 @@ using OpenTK.Graphics.OpenGL;
 using OpenTK;
 using MathTools;
 using System.Collections.Generic;
+using OpenTK.Input;
 
 namespace OpenGLTkVerletDemo
 {
@@ -36,7 +37,6 @@ namespace OpenGLTkVerletDemo
 
 			//GL.ClearColor (1.0f, 1.0f, 1.0f,0.0f);
 			GL.ClearColor (0.0f, 0.0f, 0.0f,0.0f);
-
 			VSync = OpenTK.VSyncMode.On;
 			InitProgram ();
 			mvp = new IMatrixStack ();
@@ -44,15 +44,14 @@ namespace OpenGLTkVerletDemo
 			ResetTrackBall ();
 		
 
-			KeyPress += (s, e) => {
-
-				switch (e.KeyChar.ToString ().ToLower ()) {
-				case "w":
+			Keyboard.KeyDown += (s, e) => {
+				switch(e.Key){
+					case Key.W:
 					{
 						wireframeOn = !wireframeOn;
 						break;
 					}
-				case "s":
+				case Key.S:
 					{
 						if (appliedForce)
 							break;
@@ -60,22 +59,47 @@ namespace OpenGLTkVerletDemo
 						appliedForce = true;
 						break;
 					}
-				case "r":
+				case Key.R:
 					{
 						Reset ();
-						break;}
-				case "c":
-					{
-						ResetTrackBall ();
 						break;
 					}
-				case "p":
-				{
-					pause = !pause;
-					break;
+				case Key.C:
+						{
+							ResetTrackBall ();
+							break;
+						}
+				case Key.P:
+					{
+						pause = !pause;
+						break;
+					}
+				case Key.A:
+					{
+						animateSphere=!animateSphere;
+						break;
+					}
+				case Key.Number1:
+					{
+					Reset();
+						type1();
+						break;
+					}
+				case Key.Number2:
+					{
+					Reset();
+						type2();
+						break;
+					}
+				case Key.Number3:
+					{
+					Reset();
+					type3();
+
+						break;
+					}
 				}
 
-				}
 			};
 
 		}
@@ -92,7 +116,7 @@ namespace OpenGLTkVerletDemo
 			InitCloth ();
 			InitSphere ();
 			appliedForce = false;
-		
+			animateSphere = false;
 			pause = false;
 		}
 
@@ -146,7 +170,7 @@ namespace OpenGLTkVerletDemo
 
 		}
 		float time = 0;
-	
+		bool animateSphere;
 		protected override void OnUpdateFrame (FrameEventArgs e)
 		{
 			base.OnUpdateFrame (e);
@@ -155,7 +179,8 @@ namespace OpenGLTkVerletDemo
 			if(!pause)
 				time += (float)e.Time;
 
-			AnimateSpheres();
+			if(animateSphere)
+				AnimateSpheres();
 
 			cloth.PhysicStep ((float)e.Time);
 			foreach(var sphere in spheres)
@@ -218,7 +243,7 @@ namespace OpenGLTkVerletDemo
 		float clothHeight;
 		void InitCloth(){
 			clothForce = new Vec3(0,0,+1).Mult(0.05f).Normalized();
-			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=25,clothHeight=25, 30, 30));
+			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=50,clothHeight=50, 25, 25));
 			cloth.Mass= (0.05f);
 			cloth.Model =  IMatrix.Translation (0, 10.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
 		}
@@ -226,17 +251,42 @@ namespace OpenGLTkVerletDemo
 
 		void InitSphere(){
 			spheres = new List<Sphere> ();
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0) });
+			type1 ();
+		}
+
+		void type1(){
+
+			spheres.Clear ();
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0)  });
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,0) });
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,10) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,10)  });
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,-10) });
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,2.5f,0) });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,5.0f,0), Animated = false});
+		}
+
+		void type2(){
+			spheres.Clear ();
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0) ,Radius = 3.5f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,0) ,Radius = 3.5f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,10) ,Radius = 3.5f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,0,-10) ,Radius = 3.5f});
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,10) ,Radius = 3.5f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,-10) ,Radius = 3.5f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,-10) ,Radius = 3.5f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,10) ,Radius = 3.5f});
 	
+		}
+
+		void type3(){
+			spheres.Clear ();
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,-5.0f,0) , Radius = 10.0f, Animated = false});
 		}
 
 
 		void AnimateSpheres(){
 			foreach (var s in spheres) {
+				if (!s.Animated)
+					continue;
 				s.Model = IMatrix.RotationY(2.0f).Dot(s.Model);
 			}
 		}
@@ -250,11 +300,13 @@ namespace OpenGLTkVerletDemo
 		public int Rings { get; set; }
 		public int Segments { get; set; }
 		public Vec4 Color { get; set; }
+		public bool Animated { get; set; }
 		public Sphere(){
 			Rings = 32;
 			Radius = 4.0f;
 			Segments = 16;
 			Color = new Vec4 (1.0f, 0, 0, 0.5f);
+			Animated = true;
 		}
 
 	}
