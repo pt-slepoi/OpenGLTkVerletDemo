@@ -18,7 +18,10 @@ namespace OpenGLTkVerletDemo
 		int useColorLocation = -1;
 		int colorLocation = -1;
 		bool useColor;
-		IMatrixStack mvp;
+	
+		IMatrixStack model;
+		IMatrix view;
+		IMatrix proj;
 		bool wireframeOn = true;
 		VerletMesh cloth;
 		List<Sphere> spheres;
@@ -44,7 +47,10 @@ namespace OpenGLTkVerletDemo
 			GL.BlendFunc (BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 			VSync = OpenTK.VSyncMode.On;
 			InitProgram ();
-			mvp = new IMatrixStack ();
+		
+			model = new IMatrixStack ();
+			view = new IMatrix ();
+			proj = new IMatrix ();
 			Reset ();
 			ResetTrackBall ();
 			useColor = false;
@@ -148,40 +154,43 @@ namespace OpenGLTkVerletDemo
 			else
 				GL.PolygonMode (MaterialFace.FrontAndBack, PolygonMode.Fill);
 
-			mvp.SetIdentity ();
+			proj = new IMatrix();
 
 			float aspectRatio = (float) ((1.0f * this.Width) / this.Height);
 
 			//fixing aspect ratio
 			if (aspectRatio < 1.0)
-				mvp.MultMatrix(IMatrix.Scaling(1.0f, aspectRatio, 0.5f));
+				proj = IMatrix.Scaling(1.0f, aspectRatio, 0.5f);
 			else
-				mvp.MultMatrix(IMatrix.Scaling(1/aspectRatio,1, 0.5f));
+				proj = IMatrix.Scaling(1/aspectRatio,1, 0.5f);
 
 			//perspective
-			mvp.MultMatrix(IMatrix.Perspective (1.0f, 0.2f, 20.0f));
+			proj = proj.Dot(IMatrix.Perspective (1.0f, 0.2f, 20.0f));
+
 
 			//view
-			mvp.MultMatrix(trackball.InvertibleTransform ());
-			SendUniforms ();
+			view = trackball.InvertibleTransform ();
 
 
+
+
+			model.SetIdentity ();
 			//from now on... model!
 			foreach (var sphere in spheres) {
-				mvp.Push ();
-				mvp.MultMatrix (sphere.Model);
+				model.Push ();
+				model.MultMatrix (sphere.Model);
 			
 				SendUniforms (sphere.Color);
 				DrawSphere (sphere.Radius, sphere.Rings, sphere.Segments);
-				mvp.Pop ();
+				model.Pop ();
 			}
 
 
-			mvp.Push ();
-			mvp.MultMatrix (cloth.Model);
+			model.Push ();
+			model.MultMatrix (cloth.Model);
 			SendUniforms (new Vec4(0.5f,1,0.3f,1.0f));
 			DrawMesh (cloth);
-			mvp.Pop ();
+			model.Pop ();
 
 			SwapBuffers ();
 
@@ -219,7 +228,8 @@ namespace OpenGLTkVerletDemo
 
 		void SendUniforms (Vec4 color)
 		{
-			GL.UniformMatrix4 (mvpLocation, 1, false, mvp.Top().Direct.ToFloatArray ());
+			var mvp = proj.Dot (view.Dot (model.Top()));
+			GL.UniformMatrix4 (mvpLocation, 1, false, mvp.Direct.ToFloatArray ());
 			GL.Uniform1 (distanceLocation,trackball.distance);
 			GL.Uniform1 (useColorLocation, useColor ? 1:0);
 			GL.Uniform4 (colorLocation, 1, color.GetArray());
