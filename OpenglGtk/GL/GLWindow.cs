@@ -14,14 +14,16 @@ namespace OpenGLTkVerletDemo
 		int program;
 		MouseTrackBall trackball;
 		int mvpLocation = -1;
+		int distanceLocation = -1;
+		int useColorLocation = -1;
 		int colorLocation = -1;
+		bool useColor;
 		IMatrixStack mvp;
 		bool wireframeOn = true;
 		VerletMesh cloth;
 		List<Sphere> spheres;
 		bool appliedForce = false;
 		bool pause = false;
-		VerletMesh megaSphere;
 	
 
 		protected override void OnResize (EventArgs e)
@@ -45,7 +47,7 @@ namespace OpenGLTkVerletDemo
 			mvp = new IMatrixStack ();
 			Reset ();
 			ResetTrackBall ();
-		
+			useColor = false;
 
 			Keyboard.KeyDown += (s, e) => {
 				switch(e.Key){
@@ -67,7 +69,7 @@ namespace OpenGLTkVerletDemo
 						Reset ();
 						break;
 					}
-				case Key.C:
+				case Key.T:
 						{
 							ResetTrackBall ();
 							break;
@@ -82,6 +84,12 @@ namespace OpenGLTkVerletDemo
 						animateSphere=!animateSphere;
 						break;
 					}
+				case Key.C:
+				{
+					useColor = !useColor;
+					Console.WriteLine("using color");
+					break;
+				}
 				case Key.Number1:
 					{
 					Reset();
@@ -212,6 +220,8 @@ namespace OpenGLTkVerletDemo
 		void SendUniforms (Vec4 color)
 		{
 			GL.UniformMatrix4 (mvpLocation, 1, false, mvp.Top().Direct.ToFloatArray ());
+			GL.Uniform1 (distanceLocation,trackball.distance);
+			GL.Uniform1 (useColorLocation, useColor ? 1:0);
 			GL.Uniform4 (colorLocation, 1, color.GetArray());
 		}
 		void SendUniforms ()
@@ -246,6 +256,8 @@ namespace OpenGLTkVerletDemo
 			//getting locations indexes
 			mvpLocation = GL.GetUniformLocation (program, "mvp");
 			colorLocation = GL.GetUniformLocation( program, "color");
+			distanceLocation = GL.GetUniformLocation( program, "distance");
+			useColorLocation = GL.GetUniformLocation( program, "useColor");
 
 
 		}
