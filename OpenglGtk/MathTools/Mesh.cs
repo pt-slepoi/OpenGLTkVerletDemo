@@ -107,6 +107,44 @@ namespace MathTools
 
 			return plane;
 		}
+
+		public static Mesh CreateSphere(float radius, float rings, float segments){
+
+			double s, t;
+
+			var list = new List<Vec3> ();
+
+			for(var i = 0; i < rings; i++){
+				for(var j = 0; j < segments; j++){
+					s = (float)i * 2 * Math.PI / rings;
+					t = (float)j * 2 * Math.PI / segments;
+					list.Add(new Vec3(
+						(float)(radius * Math.Sin(s) * Math.Cos(t)),
+						(float)(radius * Math.Sin(s) * Math.Sin(t)), 
+						(float)(radius * Math.Cos(s))
+					));
+
+					s = (double)(i + 1) * 2 * Math.PI / rings;
+					list.Add( new Vec3(
+						(float)(radius * Math.Sin(s) * Math.Cos(t)),
+					        (float)(radius * Math.Sin(s) * Math.Sin(t)), 
+					        (float)(radius * Math.Cos(s))
+					));
+
+				}
+			}
+
+			var mesh = new Mesh ();
+			mesh.VertexList = list;
+			for(var i = 0; i<list.Count-2; i++)
+			{
+				mesh.Faces.Add (new Face (i, i + 1, i + 2));
+			}
+
+			return mesh;
+
+
+		}
 	}
 }
 
