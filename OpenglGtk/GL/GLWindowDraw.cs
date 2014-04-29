@@ -31,7 +31,10 @@ namespace OpenGLTkVerletDemo
 			int i, j;
 			double s, t;
 		
-			GL.Begin(BeginMode.TriangleStrip);
+			if(useLines)
+				GL.Begin (BeginMode.TriangleStrip);
+			else
+				GL.Begin (BeginMode.Points);
 
 			for(i = 0; i < rings; i++){
 				for(j = 0; j < segments; j++){
@@ -86,7 +89,10 @@ namespace OpenGLTkVerletDemo
 		void DrawMesh(Mesh m){
 //			var c = 0;
 			foreach (var f in m.Faces) {
-				GL.Begin (BeginMode.Triangles);
+				if(useLines)
+					GL.Begin (BeginMode.Triangles);
+				else
+					GL.Begin (BeginMode.Points);
 				//				Console.Write (string.Format ("Face {0} [ ", c++)); 
 				for (var i =0; i<Face.N; i++) {
 					var v = m.VertexList [f.posIndex [i]];

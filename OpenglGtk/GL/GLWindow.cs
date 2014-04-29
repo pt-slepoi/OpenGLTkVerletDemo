@@ -17,6 +17,8 @@ namespace OpenGLTkVerletDemo
 		int distanceLocation = -1;
 		int useColorLocation = -1;
 		int colorLocation = -1;
+		int modeViewLocation = -1;
+
 		bool useColor;
 	
 		IMatrixStack model;
@@ -27,6 +29,7 @@ namespace OpenGLTkVerletDemo
 		List<Sphere> spheres;
 		bool appliedForce = false;
 		bool pause = false;
+		bool useLines = true;
 	
 
 		protected override void OnResize (EventArgs e)
@@ -45,6 +48,7 @@ namespace OpenGLTkVerletDemo
 			GL.Enable (EnableCap.DepthTest);
 			GL.Enable (EnableCap.Blend);
 			GL.BlendFunc (BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
+			GL.PointSize(2.5f);
 			VSync = OpenTK.VSyncMode.On;
 			InitProgram ();
 		
@@ -70,12 +74,17 @@ namespace OpenGLTkVerletDemo
 						appliedForce = true;
 						break;
 					}
+				case Key.T:
+				{
+					useLines = !useLines;
+					break;
+				}
 				case Key.R:
 					{
 						Reset ();
 						break;
 					}
-				case Key.T:
+				case Key.X:
 						{
 							ResetTrackBall ();
 							break;
@@ -206,16 +215,17 @@ namespace OpenGLTkVerletDemo
 	
 			if(!pause)
 				time += (float)e.Time;
+			var N = 7;
+			for (var i = 0; i<N; i++) {
+				if (animateSphere)
+					AnimateSpheres ();
 
-			if(animateSphere)
-				AnimateSpheres();
-
-			cloth.PhysicStep ((float)e.Time);
-			foreach(var sphere in spheres)
-				cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))),sphere.Radius);
-	
-			cloth.ApplyConstraints ();
+				cloth.PhysicStep ((float)e.Time/N);
+				foreach (var sphere in spheres)
+					cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))), sphere.Radius);
 		
+				cloth.ApplyConstraints ();
+			}	
 
 		}
 
@@ -228,8 +238,10 @@ namespace OpenGLTkVerletDemo
 
 		void SendUniforms (Vec4 color)
 		{
-			var mvp = proj.Dot (view.Dot (model.Top()));
+			var mv = view.Dot (model.Top ());
+			var mvp = proj.Dot (mv);
 			GL.UniformMatrix4 (mvpLocation, 1, false, mvp.Direct.ToFloatArray ());
+			GL.UniformMatrix4 (modeViewLocation, 1, false, mv.Direct.ToFloatArray ());
 			GL.Uniform1 (distanceLocation,trackball.distance);
 			GL.Uniform1 (useColorLocation, useColor ? 1:0);
 			GL.Uniform4 (colorLocation, 1, color.GetArray());
@@ -268,7 +280,7 @@ namespace OpenGLTkVerletDemo
 			colorLocation = GL.GetUniformLocation( program, "color");
 			distanceLocation = GL.GetUniformLocation( program, "distance");
 			useColorLocation = GL.GetUniformLocation( program, "useColor");
-
+			modeViewLocation = GL.GetUniformLocation( program, "mv");
 
 		}
 
@@ -276,8 +288,8 @@ namespace OpenGLTkVerletDemo
 		float clothWidth;
 		float clothHeight;
 		void InitCloth(){
-			clothForce = new Vec3(0,0,+1).Mult(0.05f).Normalized();
-			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=50,clothHeight=50, 25, 25));
+			clothForce = new Vec3(0,0,+1).Mult(5.0f);
+			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=50,clothHeight=50, 20, 20));
 			cloth.Mass= (0.05f);
 			cloth.Model =  IMatrix.Translation (0, 10.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
 
@@ -286,7 +298,7 @@ namespace OpenGLTkVerletDemo
 
 		void InitSphere(){
 			spheres = new List<Sphere> ();
-			Type1 ();
+			Type3 ();
 		}
 
 		void Type1(){
@@ -325,10 +337,10 @@ namespace OpenGLTkVerletDemo
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,-10) ,Radius = 3.5f });
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,10) ,Radius = 3.5f});
 
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,-10,10) ,Radius = 3.5f });
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,-10,-10) ,Radius = 3.5f });
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,-10,-10) ,Radius = 3.5f });
-			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,-10,10) ,Radius = 3.5f});
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(15,-10,15) ,Radius = 5.0f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(-15,-10,-15) ,Radius = 5.0f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(15,-10,-15) ,Radius = 5.0f });
+			spheres.Add(new Sphere () { Model = IMatrix.Translation(-15,-10,15) ,Radius = 5.0f});
 		}
 
 

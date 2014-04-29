@@ -81,8 +81,41 @@ namespace MathTools
 		public AABB getAABB(){
 			return aabb;
 		}
-
 		public static Mesh CreatePlane(float width, float height, int rows,int columns){
+			if (rows == columns && rows == 0)
+				return null;
+			var plane = new Mesh ();
+			var dw = width / rows;
+			var dh = height / columns;
+
+
+			for (var r = 0; r<rows+1; r++)
+				for (var c = 0; c<columns+1; c++)
+					plane.VertexList.Add (new Vec3 (c*dw, r*dh , 0.0f));
+
+			for (var r = 0; r<rows; r++)
+				for (var c = 0; c<columns; c++) {
+				var v0 = r * (columns + 1) + c;
+				var v1 = v0 + columns + 1;
+				var v2 = v1 + 1;
+				var v3 = v0 + 1;
+				plane.VertexList.Add (
+					plane.VertexList [v0] * 0.25f + plane.VertexList [v1] * 0.25f +
+					plane.VertexList [v2] * 0.25f + plane.VertexList [v3] * 0.25f
+				);
+				var vc = plane.VertexList.Count - 1;
+
+
+				plane.Faces.Add (new Face (v0, v1, vc));
+				plane.Faces.Add (new Face (v1, v2, vc));
+				plane.Faces.Add (new Face (v2, v3, vc));
+				plane.Faces.Add (new Face (v3, v0, vc));
+			}
+
+
+			return plane;
+		}
+		public static Mesh CreatePlane2(float width, float height, int rows,int columns){
 			if (rows == columns && rows == 0)
 				return null;
 			var plane = new Mesh ();
@@ -104,6 +137,7 @@ namespace MathTools
 					plane.Faces.Add (new Face (v0, v1, v2));
 					plane.Faces.Add (new Face (v0, v2, v3));
 				}
+
 
 			return plane;
 		}

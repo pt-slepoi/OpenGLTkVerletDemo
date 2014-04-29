@@ -17,7 +17,7 @@ namespace OpenGLTkVerletDemo
 			//MainWindow win = new MainWindow ();
 			using (var game = new GLWindow()) {
 				//60 fps, updates every 0.5 s
-				game.Run (30.0,60.0);
+				game.Run (200.0,60.0);
 			
 			}
 

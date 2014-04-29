@@ -1,8 +1,14 @@
 uniform mat4 mvp; 
-varying float depth;
+uniform mat4 mv; 
+varying float zEye;
 void main(void){
+	gl_Position = mvp * gl_Vertex;
+    
+    zEye =  -(mv * gl_Vertex).z;
+    
+    
 	
-    gl_Position = mvp * gl_Vertex;
-	depth = gl_Position.z; 
+    
+    
 
 }
