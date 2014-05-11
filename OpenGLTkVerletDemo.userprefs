@@ -1,21 +1,11 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="OpenglGtk/GL/GLWindow.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="OpenglGtk/GL/GLWindowDraw.cs">
     <Files>
-      <File FileName="OpenglGtk/GL/GLWindow.cs" Line="51" Column="20" />
-      <File FileName="OpenglGtk/Program.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/MathTools/VerletMesh.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/MathTools/Vec3.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/MathTools/Vec4.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/MathTools/AABB.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/MathTools/Mesh.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/GL/Utils.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/GL/GLWindowPhysics.cs" Line="1" Column="1" />
+      <File FileName="OpenglGtk/GL/GLWindow.cs" Line="385" Column="3" />
+      <File FileName="OpenglGtk/MathTools/VerletMesh.cs" Line="97" Column="24" />
       <File FileName="OpenglGtk/GL/GLWindowDraw.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/GL/Shaders.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/Shaders/VertexShader.glsl" Line="1" Column="1" />
-      <File FileName="OpenglGtk/Shaders/FragmentShader.glsl" Line="1" Column="1" />
-      <File FileName="OpenglGtk/MathTools/IMatrixStack.cs" Line="1" Column="1" />
+      <File FileName="OpenglGtk/Program.cs" Line="17" Column="16" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

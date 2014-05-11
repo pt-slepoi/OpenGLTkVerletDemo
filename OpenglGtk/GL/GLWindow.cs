@@ -27,6 +27,8 @@ namespace OpenGLTkVerletDemo
 		bool wireframeOn = true;
 		VerletMesh cloth;
 		List<Sphere> spheres;
+		List<Capsule> capsules = new List<Capsule> ();
+
 		bool appliedForce = false;
 		bool pause = false;
 		bool useLines = true;
@@ -131,6 +133,13 @@ namespace OpenGLTkVerletDemo
 
 					break;
 				}
+				case Key.Number5:
+				{
+					Reset();
+					Type5();
+
+					break;
+				}
 				}
 
 			};
@@ -186,11 +195,29 @@ namespace OpenGLTkVerletDemo
 			model.SetIdentity ();
 			//from now on... model!
 			foreach (var sphere in spheres) {
+
 				model.Push ();
 				model.MultMatrix (sphere.Model);
 			
 				SendUniforms (sphere.Color);
 				DrawSphere (sphere.Radius, sphere.Rings, sphere.Segments);
+				model.Pop ();
+			}
+
+			foreach (var capsule in capsules) {
+				model.Push ();
+				model.MultMatrix (capsule.Model);
+				SendUniforms (capsule.Color);
+				DrawLine (capsule.PointA, capsule.PointB);
+				model.Push ();
+				model.MultMatrix (IMatrix.Translation (capsule.PointA.X, capsule.PointA.Y,capsule.PointA.Z));
+				SendUniforms ();
+				DrawSphere (capsule.Radius, 32, 16);
+				model.Pop ();
+				model.MultMatrix (IMatrix.Translation (capsule.PointB.X, capsule.PointB.Y,capsule.PointB.Z));
+				SendUniforms ();
+				DrawSphere (capsule.Radius, 32, 16);
+				model.Pop ();
 				model.Pop ();
 			}
 
@@ -210,12 +237,12 @@ namespace OpenGLTkVerletDemo
 
 		protected override void OnUpdateFrame (FrameEventArgs e)
 		{
-			base.OnUpdateFrame (e);
+			//base.OnUpdateFrame (e);
 
 	
 			if(!pause)
 				time += (float)e.Time;
-			var N = 7;
+			var N = 5;
 			for (var i = 0; i<N; i++) {
 				if (animateSphere)
 					AnimateSpheres ();
@@ -223,9 +250,12 @@ namespace OpenGLTkVerletDemo
 				cloth.PhysicStep ((float)e.Time/N);
 				foreach (var sphere in spheres)
 					cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))), sphere.Radius);
+				foreach (var capsule in capsules)
+					cloth.FixCollisionWithCapsule (capsule.PointA, capsule.PointB, capsule.Radius);
+				//cloth.ApplyConstraints ();
+			}
 		
-				cloth.ApplyConstraints ();
-			}	
+
 
 		}
 
@@ -302,7 +332,7 @@ namespace OpenGLTkVerletDemo
 		}
 
 		void Type1(){
-
+			capsules.Clear ();
 			spheres.Clear ();
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0)  });
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,0) });
@@ -312,6 +342,7 @@ namespace OpenGLTkVerletDemo
 		}
 
 		void Type2(){
+			capsules.Clear ();
 			spheres.Clear ();
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,0) ,Radius = 3.5f });
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,0) ,Radius = 3.5f });
@@ -326,12 +357,14 @@ namespace OpenGLTkVerletDemo
 
 		void Type3(){
 			spheres.Clear ();
+			capsules.Clear ();
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(0,-5.0f,0) , Radius = 10.0f, Animated = false});
 		}
 
 		
 		void Type4(){
 			spheres.Clear ();
+			capsules.Clear ();
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,10) ,Radius = 3.5f });
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(-10,0,-10) ,Radius = 3.5f });
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(10,0,-10) ,Radius = 3.5f });
@@ -343,6 +376,17 @@ namespace OpenGLTkVerletDemo
 			spheres.Add(new Sphere () { Model = IMatrix.Translation(-15,-10,15) ,Radius = 5.0f});
 		}
 
+		void Type5(){
+			spheres.Clear ();
+			capsules.Clear ();
+		//	capsules.Add(new Capsule(){PointA = new Vec3(10,0,10), PointB = new Vec3(10,0,-10)});
+		//	capsules.Add(new Capsule(){PointA = new Vec3(-10,0,10), PointB = new Vec3(-10,0,-10)});
+
+			capsules.Add(new Capsule(){PointA = new Vec3(-10,0,10), PointB = new Vec3(10,0,10)});
+			//capsules.Add(new Capsule(){PointA = new Vec3(-10,0,-10), PointB = new Vec3(10,0,-10)});
+
+		}
+
 
 		void AnimateSpheres(){
 			foreach (var s in spheres) {
@@ -351,7 +395,12 @@ namespace OpenGLTkVerletDemo
 				s.Model = IMatrix.RotationY(2.0f).Dot(s.Model);
 			}
 		}
-
+		void DrawLine(Vec3 pointA, Vec3 pointB){
+				GL.Begin (BeginMode.Lines);
+				GL.Vertex3 (pointA.X, pointA.Y, pointA.Z);
+				GL.Vertex3 (pointB.X, pointB.Y, pointB.Z);
+				GL.End ();
+		}
 	
 	}
 
@@ -371,5 +420,22 @@ namespace OpenGLTkVerletDemo
 		}
 
 	}
+
+	class Capsule {
+		public IMatrix Model {get;set;}
+		public float Radius { get; set; }
+		public Vec3 PointA { get; set; }
+		public Vec3 PointB { get; set; }
+		public Vec4 Color { get; set; }
+		public Capsule(){
+			Radius = 2.0f;
+			Color = new Vec4 (0.8f, 0.3f, 0.5f, 1.0f);
+			Model = IMatrix.Identity ();
+		}
+	}
+
+
+
+
 }
 

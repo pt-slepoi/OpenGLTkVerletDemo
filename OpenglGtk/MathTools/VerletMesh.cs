@@ -48,7 +48,10 @@ namespace MathTools
 
 				var pNow = VertexNow [i];
 				var pOld = VertexOld [i];
-				pNext.Add (	pNow.IsColliding? pNow : pNow * 2 - pOld + acc * dt*dt);
+				var colliding = pNow.IsColliding;
+				pNow.IsColliding = false;
+				pNext.Add (colliding? pNow : pNow * 2 - pOld + acc * dt*dt);
+			
 			}
 			VertexOld = VertexNow;
 			VertexNow = pNext;
@@ -65,7 +68,7 @@ namespace MathTools
 				var diff = (v - sc);
 				var distance = diff.Norm();
 				if (distance > sphereRadius+offset) {
-					VertexList [i].IsColliding = false;
+					VertexList [i].IsColliding |= false;
 					continue;
 				}
 				v = new Vec3(sc+(diff.Normalized () * (sphereRadius+offset)));
@@ -73,6 +76,32 @@ namespace MathTools
 				VertexList [i].IsColliding = true;
 			}
 
+		}
+
+		public void FixCollisionWithCapsule(Vec3 pointA, Vec3 pointB, float radius){
+			var a = new Vec3(Model.Inverse.Dot (pointB));
+			var b = new Vec3(Model.Inverse.Dot (pointA));
+			var ab = (b - a);
+			var abn = ab.Normalized ();
+			var abl = ab.Norm ();
+
+			for (var i = 0; i<VertexList.Count; i++) {
+				var v = VertexList [i];
+				var av = v - a;
+				var dot = av.Dot (abn);
+				var p = a + abn.Mult(dot);
+
+				if ((v - p).Norm () > radius)
+					continue;
+				var apn = (p - a).Norm();
+
+				if (apn > radius || apn > abl + radius)
+				continue;
+
+				VertexList [i] = p+(v - p).Normalized () * radius;
+				VertexList [i].IsColliding |= true;
+
+			}
 		}
 
 		public void ApplyConstraints(float noise){

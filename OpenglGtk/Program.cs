@@ -12,18 +12,12 @@ namespace OpenGLTkVerletDemo
 		[STAThread]
 		public static void Main (string[] args)
 		{
-			//Application.Init ();
-
-			//MainWindow win = new MainWindow ();
 			using (var game = new GLWindow()) {
-				//60 fps, updates every 0.5 s
-				game.Run (200.0,60.0);
+
+				game.Run (100.0,25.0);
 			
 			}
 
-			//win.Show ();
-
-		//	Application.Run ();
 		}
 
 
