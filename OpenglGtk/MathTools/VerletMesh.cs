@@ -14,12 +14,12 @@ namespace MathTools
 		public float Mass { get; set; }
 		public Vec3 Force { get; set; }
 
-		public List<VertexConstraint> VertexConstraints{ get; private set; } //per gestire la mesh
+		public List<VertexConstraint> VertexConstraints{ get; set;} 
 		public List<Vec3> VertexOld { get; private set; }
 		public List<Vec3> VertexNow { get { return VertexList; } set { VertexList = value; } }
 		public IMatrix Model { get; set; }
 
-		void GenerateVertexConstraintsFromFaces(){
+		public void GenerateVertexConstraintsFromFaces(){
 			foreach (var f in Faces) {
 				var v0 = f.posIndex [0];
 				var v1 = f.posIndex [1];
@@ -34,6 +34,21 @@ namespace MathTools
 				VertexConstraints.Add(new VertexConstraint(){Vertex0 = v1,Vertex1 = v2, distance = v12.Norm()});
 
 			}
+			var vc = new List<VertexConstraint> (VertexConstraints);
+			int found = VertexConstraints.Count;
+			for (var i = 0; i<VertexConstraints.Count; i++)
+				for (var j = i+1; j<VertexConstraints.Count; j++) {
+					var v0 = VertexConstraints [i].Vertex0;
+					var v1 = VertexConstraints [i].Vertex1;
+					
+				if((v0 == VertexConstraints [j].Vertex0 && v1 == VertexConstraints [j].Vertex1) 
+				   || (v1 == VertexConstraints [j].Vertex0 && v0 == VertexConstraints [j].Vertex1))
+					vc.Remove(VertexConstraints[j]);
+				}
+			VertexConstraints = vc;
+			Console.WriteLine("Found " + found + " .... removed " + (found - VertexConstraints.Count) );
+
+
 		}
 
 		public void ApplyForce(Vec3 force){
@@ -79,25 +94,20 @@ namespace MathTools
 		}
 
 		public void FixCollisionWithCapsule(Vec3 pointA, Vec3 pointB, float radius){
-			var a = new Vec3(Model.Inverse.Dot (pointB));
-			var b = new Vec3(Model.Inverse.Dot (pointA));
-			var ab = (b - a);
-			var abn = ab.Normalized ();
-			var abl = ab.Norm ();
+			var a = new Vec3(Model.Inverse.Dot (pointA));
+			var b = new Vec3(Model.Inverse.Dot (pointB));
+			var abNormalized = (b-a).Normalized ();
+			var abNorm = (b-a).Norm ();
 
 			for (var i = 0; i<VertexList.Count; i++) {
 				var v = VertexList [i];
-				var av = v - a;
-				var dot = av.Dot (abn);
-				var p = a + abn.Mult(dot);
+				var p = a + abNormalized.Mult((v - a).Dot (abNormalized));
 
 				if ((v - p).Norm () > radius)
 					continue;
-				var apn = (p - a).Norm();
 
-				if (apn > radius || apn > abl + radius)
-				continue;
-
+				if ((p - a).Norm () > abNorm + radius || (p - b).Norm () > abNorm + radius)
+					continue;
 				VertexList [i] = p+(v - p).Normalized () * radius;
 				VertexList [i].IsColliding |= true;
 
@@ -111,9 +121,10 @@ namespace MathTools
 
 				var delta = (b - a);
 				var currentDistance = delta.Norm();
+				if (currentDistance == constraint.distance)
+					continue;
+
 				var diff = (currentDistance - constraint.distance) / currentDistance;
-
-
 
 				VertexList [constraint.Vertex0] = a + delta * (0.5f * diff*noise);
 				VertexList [constraint.Vertex1] = b - delta * (0.5f * diff*noise);
@@ -145,7 +156,7 @@ namespace MathTools
 			Model = IMatrix.Identity ();
 			foreach (var v in VertexNow)
 				VertexOld.Add (v * 1);
-			GenerateVertexConstraintsFromFaces ();
+
 		}
 	}
 }

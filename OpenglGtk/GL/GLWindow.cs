@@ -140,6 +140,13 @@ namespace OpenGLTkVerletDemo
 
 					break;
 				}
+				case Key.Number6:
+				{
+					Reset();
+					Type6();
+
+					break;
+				}
 				}
 
 			};
@@ -242,17 +249,18 @@ namespace OpenGLTkVerletDemo
 	
 			if(!pause)
 				time += (float)e.Time;
-			var N = 5;
+			var N = 10;
+			if (animateSphere)
+				AnimateSpheres ();
 			for (var i = 0; i<N; i++) {
-				if (animateSphere)
-					AnimateSpheres ();
+
 
 				cloth.PhysicStep ((float)e.Time/N);
 				foreach (var sphere in spheres)
 					cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))), sphere.Radius);
 				foreach (var capsule in capsules)
 					cloth.FixCollisionWithCapsule (capsule.PointA, capsule.PointB, capsule.Radius);
-				//cloth.ApplyConstraints ();
+				cloth.ApplyConstraints ();
 			}
 		
 
@@ -317,9 +325,15 @@ namespace OpenGLTkVerletDemo
 		Vec3 clothForce;
 		float clothWidth;
 		float clothHeight;
+		List<VertexConstraint> clothConstraints = null;
 		void InitCloth(){
 			clothForce = new Vec3(0,0,+1).Mult(5.0f);
-			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=50,clothHeight=50, 20, 20));
+			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=40,clothHeight=40, 20, 20));
+			if (clothConstraints == null) {
+				cloth.GenerateVertexConstraintsFromFaces ();
+				clothConstraints = cloth.VertexConstraints;
+			} else
+				cloth.VertexConstraints = clothConstraints;
 			cloth.Mass= (0.05f);
 			cloth.Model =  IMatrix.Translation (0, 10.0f, 0.0f).Dot (IMatrix.RotationX (-90)).Dot (IMatrix.Translation (-clothWidth/2, -clothHeight/2, 0.0f));
 
@@ -379,11 +393,31 @@ namespace OpenGLTkVerletDemo
 		void Type5(){
 			spheres.Clear ();
 			capsules.Clear ();
-		//	capsules.Add(new Capsule(){PointA = new Vec3(10,0,10), PointB = new Vec3(10,0,-10)});
-		//	capsules.Add(new Capsule(){PointA = new Vec3(-10,0,10), PointB = new Vec3(-10,0,-10)});
+			var w = 8;
+			var h = 15;
 
-			capsules.Add(new Capsule(){PointA = new Vec3(-10,0,10), PointB = new Vec3(10,0,10)});
-			//capsules.Add(new Capsule(){PointA = new Vec3(-10,0,-10), PointB = new Vec3(10,0,-10)});
+			capsules.Add(new Capsule(){PointA = new Vec3(w,0,w), PointB = new Vec3(w,0,-w)});
+			capsules.Add(new Capsule(){PointA = new Vec3(-w,0,w), PointB = new Vec3(-w,0,-w)});
+
+			capsules.Add(new Capsule(){PointA = new Vec3(-w,0,w), PointB = new Vec3(w,0,w)});
+			capsules.Add(new Capsule(){PointA = new Vec3(-w,0,-w), PointB = new Vec3(w,0,-w)});
+
+			//legs
+			capsules.Add(new Capsule(){PointA = new Vec3(w,0,w), PointB = new Vec3(w,-h,w)});
+			capsules.Add(new Capsule(){PointA = new Vec3(-w,0,-w), PointB = new Vec3(-w,-h,-w)});
+			capsules.Add(new Capsule(){PointA = new Vec3(w,0,-w), PointB = new Vec3(w,-h,-w)});
+			capsules.Add(new Capsule(){PointA = new Vec3(-w,0,w), PointB = new Vec3(-w,-h,w)});
+
+
+
+		}
+
+		void Type6(){
+			spheres.Clear ();
+			capsules.Clear ();
+			//capsules.Add(new Capsule(){PointA = new Vec3(10,0,5), PointB = new Vec3(10,0,-10)});
+			capsules.Add(new Capsule(){PointA = new Vec3(-8,0,8), PointB = new Vec3(-8,-10,8)});
+
 
 		}
 
