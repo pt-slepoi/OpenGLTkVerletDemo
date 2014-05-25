@@ -45,13 +45,12 @@ namespace OpenGLTkVerletDemo
 			base.OnLoad (args);
 			GL.Viewport(0, 0, Width, Height);
 
-			//GL.ClearColor (1.0f, 1.0f, 1.0f,0.0f);
 			GL.ClearColor (0.0f, 0.0f, 0.0f,0.0f);
 			GL.Enable (EnableCap.DepthTest);
 			GL.Enable (EnableCap.Blend);
 			GL.BlendFunc (BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha);
 			GL.PointSize(2.5f);
-			VSync = OpenTK.VSyncMode.On;
+			VSync = OpenTK.VSyncMode.Off;
 			InitProgram ();
 		
 			model = new IMatrixStack ();
@@ -196,7 +195,7 @@ namespace OpenGLTkVerletDemo
 			//view
 			view = trackball.InvertibleTransform ();
 
-
+	
 
 
 			model.SetIdentity ();
@@ -212,20 +211,7 @@ namespace OpenGLTkVerletDemo
 			}
 
 			foreach (var capsule in capsules) {
-				model.Push ();
-				model.MultMatrix (capsule.Model);
-				SendUniforms (capsule.Color);
-				DrawLine (capsule.PointA, capsule.PointB);
-				model.Push ();
-				model.MultMatrix (IMatrix.Translation (capsule.PointA.X, capsule.PointA.Y,capsule.PointA.Z));
-				SendUniforms ();
-				DrawSphere (capsule.Radius, 32, 16);
-				model.Pop ();
-				model.MultMatrix (IMatrix.Translation (capsule.PointB.X, capsule.PointB.Y,capsule.PointB.Z));
-				SendUniforms ();
-				DrawSphere (capsule.Radius, 32, 16);
-				model.Pop ();
-				model.Pop ();
+				DrawCapsule1 (capsule);
 			}
 
 
@@ -236,9 +222,42 @@ namespace OpenGLTkVerletDemo
 			model.Pop ();
 
 			SwapBuffers ();
-
+			var N = 10;
+			for (var i = 0; i<N; i++) {
+				doPhysics ((float)e.Time/N);
+			}
 
 		}
+
+		void DrawCapsule1(Capsule capsule){
+			model.Push ();
+			model.MultMatrix (capsule.Model);
+			SendUniforms (capsule.Color);
+			DrawLine (capsule.PointA, capsule.PointB);
+			model.Push ();
+			model.MultMatrix (IMatrix.Translation (capsule.PointA.X, capsule.PointA.Y,capsule.PointA.Z));
+			SendUniforms ();
+			DrawSphere (capsule.Radius, 32, 16);
+			model.Pop ();
+			model.MultMatrix (IMatrix.Translation (capsule.PointB.X, capsule.PointB.Y,capsule.PointB.Z));
+			SendUniforms ();
+			DrawSphere (capsule.Radius, 32, 16);
+			model.Pop ();
+			model.Pop ();
+		}
+
+		void DrawCapsule2(Capsule capsule){
+			model.Push ();
+			model.MultMatrix (capsule.Model);
+			SendUniforms (capsule.Color);
+			var a = capsule.PointA;
+			var b = capsule.PointB;
+			var r = capsule.Radius;
+			DrawLine (new Vec3(a.X,a.Y,a.Z), new Vec3(b.X,b.Y,b.Z));
+
+			model.Pop ();
+		}
+
 		float time = 0;
 		bool animateSphere;
 
@@ -247,24 +266,28 @@ namespace OpenGLTkVerletDemo
 			//base.OnUpdateFrame (e);
 
 	
+		
+
+
+		}
+
+		void doPhysics(float dt){
+
 			if(!pause)
-				time += (float)e.Time;
-			var N = 10;
+				time += dt;
+
 			if (animateSphere)
 				AnimateSpheres ();
-			for (var i = 0; i<N; i++) {
+		
 
 
-				cloth.PhysicStep ((float)e.Time/N);
+				cloth.PhysicStep (dt);
 				foreach (var sphere in spheres)
 					cloth.FixCollisionWithSphere (new Vec3 (sphere.Model.Direct.Dot (new Vec4 (0, 0, 0, 1))), sphere.Radius);
 				foreach (var capsule in capsules)
 					cloth.FixCollisionWithCapsule (capsule.PointA, capsule.PointB, capsule.Radius);
 				cloth.ApplyConstraints ();
-			}
 		
-
-
 		}
 
 		void DrawBigPoint(){
@@ -328,7 +351,7 @@ namespace OpenGLTkVerletDemo
 		List<VertexConstraint> clothConstraints = null;
 		void InitCloth(){
 			clothForce = new Vec3(0,0,+1).Mult(5.0f);
-			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=40,clothHeight=40, 20, 20));
+			cloth = new VerletMesh (Mesh.CreatePlane (clothWidth=50,clothHeight=50, 20, 20));
 			if (clothConstraints == null) {
 				cloth.GenerateVertexConstraintsFromFaces ();
 				clothConstraints = cloth.VertexConstraints;

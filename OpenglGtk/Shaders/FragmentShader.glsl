@@ -19,7 +19,11 @@ void main(void){
 	}
 	gl_FragColor.w = 1.0;
 	
-	/*if(gl_FrontFacing)
-		gl_FragColor = gl_FragColor * 0.50;
-	  */ 
+	/*if(gl_FrontFacing){
+		gl_FragColor.x = 1.0 -gl_FragColor.x;
+		gl_FragColor.y = 1.0 -gl_FragColor.y;
+		gl_FragColor.z = 1.0 -gl_FragColor.z;
+		gl_FragColor.w = 1.0;
+	}*/
+	   
   }

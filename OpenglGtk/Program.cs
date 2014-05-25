@@ -14,7 +14,7 @@ namespace OpenGLTkVerletDemo
 		{
 			using (var game = new GLWindow()) {
 
-				game.Run (200.0,60.0);
+				game.Run (100.0,200.0);
 			
 			}
 

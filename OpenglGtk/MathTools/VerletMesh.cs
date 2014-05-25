@@ -114,20 +114,20 @@ namespace MathTools
 			}
 		}
 
-		public void ApplyConstraints(float noise){
+		public void ApplyConstraints(){
 			foreach (var constraint in VertexConstraints) {
 				var a = (Vec3)VertexList [constraint.Vertex0];
 				var b = (Vec3)VertexList [constraint.Vertex1];
 
 				var delta = (b - a);
 				var currentDistance = delta.Norm();
-				if (currentDistance == constraint.distance)
-					continue;
+				var x = currentDistance - constraint.distance;
+				//if ( > )
+					// continue;
 
-				var diff = (currentDistance - constraint.distance) / currentDistance;
-
-				VertexList [constraint.Vertex0] = a + delta * (0.5f * diff*noise);
-				VertexList [constraint.Vertex1] = b - delta * (0.5f * diff*noise);
+				var d = delta * (0.5f * (x) / currentDistance);
+				VertexList [constraint.Vertex0] = a + d;
+				VertexList [constraint.Vertex1] = b - d;
 
 				VertexList [constraint.Vertex0].IsColliding = a.IsColliding;
 				VertexList [constraint.Vertex1].IsColliding = b.IsColliding;
@@ -135,9 +135,7 @@ namespace MathTools
 
 			}
 		}
-		public void ApplyConstraints(){
-			ApplyConstraints (1.0f);
-		}
+
 		public VerletMesh ():base(){
 			init ();
 		}

@@ -1,11 +1,11 @@
 ﻿<Properties GitUserInfo="UsingGIT">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="OpenglGtk/GL/GLWindowDraw.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="OpenglGtk/GL/GLWindow.cs">
     <Files>
-      <File FileName="OpenglGtk/GL/GLWindow.cs" Line="385" Column="3" />
-      <File FileName="OpenglGtk/MathTools/VerletMesh.cs" Line="97" Column="24" />
+      <File FileName="OpenglGtk/GL/GLWindow.cs" Line="215" Column="17" />
+      <File FileName="OpenglGtk/MathTools/VerletMesh.cs" Line="1" Column="1" />
       <File FileName="OpenglGtk/GL/GLWindowDraw.cs" Line="1" Column="1" />
-      <File FileName="OpenglGtk/Program.cs" Line="17" Column="16" />
+      <File FileName="OpenglGtk/Program.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
